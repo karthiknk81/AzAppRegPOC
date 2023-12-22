@@ -1,0 +1,20 @@
+    $CLIENT_ID = "3c135cf6-1ab8-415e-a6a4-31781e4d872c"
+    $CLIENT_SECRET = "8rl8Q~N4.YG5TJ4XE_iTyZpeGPby-8R4IfpVwaTX" 
+    $TENANT_ID = "e68d1241-2ae2-4faf-b7fd-828ee5f38f37" 
+    $SCOPE = [System.Uri]::EscapeDataString("https://graph.microsoft.com/.default")
+
+    $HTTP_METHOD = "POST"
+    $AUTH_URL = "https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/token"
+    $GRANT_TYPE = "client_credentials"
+    $HTTP_REQ_BODY = "grant_type=$GRANT_TYPE&"+
+                        "client_id=$CLIENT_ID&"+
+                        "client_secret=$CLIENT_SECRET&"+
+                        "scope=$SCOPE"
+
+    $HTTP_RESPONSE = Invoke-RestMethod $AUTH_URL  -Method $HTTP_METHOD  -Body $HTTP_REQ_BODY -ErrorAction STOP
+    $BEARER_TOKEN = ConvertTo-SecureString $HTTP_RESPONSE.access_token -AsPlainText -Force
+
+    $CREDENTIAL = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $CLIENT_ID, $(ConvertTo-SecureString -String $CLIENT_SECRET -AsPlainText -Force) -ErrorAction STOP
+
+    Connect-MgGraph -AccessToken $BEARER_TOKEN -ErrorAction STOP
+    Connect-AzAccount -ServicePrincipal -TenantId $TENANT_ID -Credential $CREDENTIAL -ErrorAction STOP
